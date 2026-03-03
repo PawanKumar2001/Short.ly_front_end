@@ -10,6 +10,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
   const [loginData, setLoginData] = useState({
     identifier: "",
@@ -219,16 +220,30 @@ export default function Login() {
                 className="p-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-transparent text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#ff4d4d]"
               />
 
-              <input
-                type="text"
-                placeholder="Password"
-                value={registerData.password}
-                onChange={(e) =>
-                  setRegisterData({ ...registerData, password: e.target.value })
-                }
-                required
-                className="p-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-transparent text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#ff4d4d]"
-              />
+              <div className="relative">
+                <input
+                  type={showRegisterPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={registerData.password}
+                  onChange={(e) =>
+                    setRegisterData({
+                      ...registerData,
+                      password: e.target.value,
+                    })
+                  }
+                  required
+                  className="w-full p-3 pr-10 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-transparent text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#ff4d4d]"
+                />
+
+                {/* Eye Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white transition"
+                >
+                  {showRegisterPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
 
               <button
                 type="submit"

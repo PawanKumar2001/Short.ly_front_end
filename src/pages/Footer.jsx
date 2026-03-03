@@ -15,7 +15,7 @@ const Footer = () => {
           MIT License
         </a>
         <a
-          href="https://github.com/yourusername/yourrepo"
+          href="https://github.com/PawanKumar2001/Short.ly_front_end"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-red-500 transition-colors duration-200"
