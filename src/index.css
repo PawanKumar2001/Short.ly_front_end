@@ -1,0 +1,60 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Darker Grotesque", sans-serif;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Animated gradient blobs */
+.blob {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle at center, #ef4444, transparent 60%);
+  filter: blur(120px);
+  opacity: 0.25;
+  animation: move 20s infinite alternate ease-in-out;
+}
+
+.dark .blob {
+  background: radial-gradient(circle at center, #ffffff, transparent 60%);
+  opacity: 0.1;
+}
+
+.blob1 { top: -100px; left: -100px; }
+.blob2 { bottom: -150px; right: -100px; animation-delay: 4s; }
+.blob3 { top: 40%; left: 60%; animation-delay: 8s; }
+
+@keyframes move {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(80px, -60px); }
+}
+
+/* Premium input */
+.input-premium {
+  @apply px-4 py-2.5 rounded-xl border
+  bg-white text-black
+  dark:bg-neutral-800 dark:text-white dark:border-neutral-600
+  focus:outline-none focus:ring-2 focus:ring-red-400
+  transition-all duration-300;
+}
+
+.premium-scroll {
+  scrollbar-width: none; /* Firefox */
+}
+
+.premium-scroll::-webkit-scrollbar {
+  display: none;
+}
