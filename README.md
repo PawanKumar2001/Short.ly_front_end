@@ -3,7 +3,7 @@
 This is the front - end for Short.ly web application. 
 
 ## Vercel Link
-Click This link to see Short.ly in action - 
+Click This link to see Short.ly in action - https://shortlyfrontend.vercel.app/
 
 # Technology Used
 
