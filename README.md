@@ -5,8 +5,10 @@ This is the front - end for Short.ly web application.
 ## Vercel Link
 Click This link to see Short.ly in action - https://shortlyfrontend.vercel.app/
 
-# Technology Used
+## Backend Repo Link
+Github Backend Repo Link - https://github.com/nsniteshsonal37/Shortly
 
+# Technology Used
 The Front - end of Short.ly is based on 
 a. React + Vite
 b. Tailwind CSS
