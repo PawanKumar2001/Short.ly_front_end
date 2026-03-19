@@ -5,7 +5,7 @@ import * as linkService from "../services/linkService";
 import Footer from "./Footer";
 import { BASE_URL } from "../config/api";
 
-const BACKEND_BASE_URL = BASE_URL
+const BACKEND_BASE_URL = BASE_URL;
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -13,6 +13,7 @@ export default function Home() {
   const [history, setHistory] = useState([]);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [copiedUrl, setCopiedUrl] = useState(null);
 
   const navigate = useNavigate();
@@ -20,12 +21,13 @@ export default function Home() {
   // ================= LOAD USER + HISTORY =================
   const loadData = useCallback(async () => {
     try {
+      setPageLoading(true);
+
       const [userData, links] = await Promise.all([
         linkService.getUserDetails(),
         linkService.getLinks(),
       ]);
 
-      // 🔥 Robust username handling
       const extractedUsername =
         userData?.username || userData?.user?.username || "";
 
@@ -35,6 +37,11 @@ export default function Home() {
       console.error("Auth error:", err);
       localStorage.removeItem("token");
       navigate("/");
+    } finally {
+      // 🔥 prevent flicker
+      setTimeout(() => {
+        setPageLoading(false);
+      }, 300);
     }
   }, [navigate]);
 
@@ -63,8 +70,6 @@ export default function Home() {
       setLoading(true);
 
       const newLink = await linkService.createLink(url);
-
-      // 🔥 Format full short URL
       const fullShortUrl = `${BACKEND_BASE_URL}/${newLink.short_code}`;
 
       setShortUrl(fullShortUrl);
@@ -103,7 +108,7 @@ export default function Home() {
       <div className="pointer-events-none absolute w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-red-500/20 blur-[120px] rounded-full -top-32 -left-32 animate-pulse"></div>
 
       {/* NAVBAR */}
-      <nav className="fixed top-0 left-0 w-full z-50 bg-blur backdrop-blur-md  border-b border-gray-200 dark:border-zinc-800">
+      <nav className="fixed top-0 left-0 w-full z-50 bg-blur backdrop-blur-md border-b border-gray-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 flex items-center justify-between">
           <h1
             className="text-3xl md:text-4xl font-black text-black dark:text-white tracking-tight"
@@ -126,64 +131,59 @@ export default function Home() {
 
       {/* USERNAME */}
       <div className="w-full max-w-7xl mx-auto px-4 md:px-6 my-8">
-        <div
-          className="
-          text-center md:text-left
-          text-5xl sm:text-6xl md:text-5xl
-          font-semibold
-          text-black dark:text-white
-          my-6
-        "
-          style={{ fontFamily: "'Darker Grotesque', sans-serif" }}
-        >
-          Hi, <span className="text-[#ff4d4d]">{formattedUsername}</span>
-        </div>
+        {pageLoading ? (
+          <div className="animate-pulse">
+            <div className="h-12 w-48 bg-gray-300 dark:bg-zinc-700 rounded"></div>
+          </div>
+        ) : (
+          <div className="animate-fadeIn text-center md:text-left text-5xl sm:text-6xl md:text-5xl font-semibold text-black dark:text-white my-6"
+            style={{ fontFamily: "'Darker Grotesque', sans-serif" }}>
+            Hi, <span className="text-[#ff4d4d]">{formattedUsername}</span>
+          </div>
+        )}
       </div>
 
       {/* MAIN */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+
           {/* SHORTENER */}
-          <div className="bg-gray-100 dark:bg-zinc-900 
-            p-6 md:p-8 
-            rounded-2xl 
-            border border-gray-200 dark:border-zinc-800 
-            flex flex-col justify-center
-            md:aspect-square
-          ">
-            <form
-              onSubmit={handleShorten}
-              className="flex flex-col items-center gap-6"
-            >
-              {/* Large Multi-line URL Box */}
-              <textarea
-                placeholder="Enter your URL"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                rows={4}
-                className="w-full max-w-md h-40 md:h-48 text-left text-base md:text-lg p-6 rounded-2xl bg-white dark:bg-black border border-gray-300 dark:border-zinc-700 text-black dark:text-white outline-none focus:ring-2 focus:ring-red-500 transition resize-none break-all"
-              />
+          <div className="bg-gray-100 dark:bg-zinc-900 p-6 md:p-8 rounded-2xl border border-gray-200 dark:border-zinc-800 flex flex-col justify-center md:aspect-square">
+            {pageLoading ? (
+              <div className="flex flex-col gap-6 animate-pulse">
+                <div className="w-full h-40 md:h-48 bg-gray-300 dark:bg-zinc-700 rounded-2xl"></div>
+                <div className="w-full max-w-xs h-10 bg-gray-300 dark:bg-zinc-700 rounded-xl mx-auto"></div>
+              </div>
+            ) : (
+              <form onSubmit={handleShorten} className="flex flex-col items-center gap-6 animate-fadeIn">
+                <textarea
+                  placeholder="Enter your URL"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  rows={4}
+                  className="w-full max-w-md h-40 md:h-48 text-left text-base md:text-lg p-6 rounded-2xl bg-white dark:bg-black border border-gray-300 dark:border-zinc-700 text-black dark:text-white outline-none focus:ring-2 focus:ring-red-500 transition resize-none break-all"
+                />
 
-              {/*Button */}
-              <button
-                disabled={loading}
-                className="w-full max-w-xs py-3 rounded-xl bg-black text-white hover:bg-red-600 transition dark:bg-white dark:text-black dark:hover:bg-red-500 disabled:opacity-50"
-              >
-                {loading ? "Processing..." : "Shorten"}
-              </button>
-            </form>
+                <button
+                  disabled={loading}
+                  className="w-full max-w-xs py-3 rounded-xl bg-black text-white hover:bg-red-600 transition dark:bg-white dark:text-black dark:hover:bg-red-500 disabled:opacity-50"
+                >
+                  {loading ? "Processing..." : "Shorten"}
+                </button>
+              </form>
+            )}
 
-            {shortUrl && (
-              <div className="mt-8 p-4 rounded-xl bg-white dark:bg-black border border-gray-300 dark:border-zinc-700 flex flex-col items-center">
+            {!pageLoading && shortUrl && (
+              <div className="mt-8 p-4 rounded-xl bg-white dark:bg-black border border-gray-300 dark:border-zinc-700 flex flex-col items-center animate-fadeIn">
                 <div className="text-gray-800 dark:text-gray-200 mb-4 break-all text-center">
                   <a
-                      href={shortUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-black dark:text-white font-medium mt-1 break-all hover:text-red-500 transition-colors duration-200"
-                    >
-                      {shortUrl}
-                    </a>
+                    href={shortUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-black dark:text-white font-medium mt-1 break-all hover:text-red-500 transition-colors duration-200"
+                  >
+                    {shortUrl}
+                  </a>
                 </div>
 
                 <button
@@ -205,59 +205,67 @@ export default function Home() {
             </div>
 
             <div className="flex-1 overflow-y-auto px-6 md:px-8 py-6 flex flex-col gap-4 premium-scroll">
-              {history.map((item) => {
-                const fullUrl = `${BACKEND_BASE_URL}/${item.short_code}`;
-
-                return (
-                  <div
-                    key={item.id}
-                    className="p-4 rounded-xl bg-white dark:bg-black border border-gray-300 dark:border-zinc-700 hover:shadow-md transition"
-                  >
-                    <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                      {item.original_url}
-                    </div>
-
-                    <a
-                      href={fullUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-black dark:text-white font-medium mt-1 break-all hover:text-red-500 transition-colors duration-200"
-                    >
-                      {fullUrl}
-                    </a>
-
-                    <div className="flex flex-wrap gap-3 mt-3">
-                      <button
-                        onClick={() => {
-                          copyToClipboard(fullUrl);
-                          setCopiedUrl(fullUrl);
-                          setTimeout(() => setCopiedUrl(null), 2000);
-                        }}
-                        className="px-3 py-1 text-sm rounded-md bg-black text-white hover:bg-red-600 transition dark:bg-white dark:text-black dark:hover:bg-red-500"
-                      >
-                        {copiedUrl === fullUrl ? "Copied" : "Copy"}
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="px-3 py-1 text-sm rounded-md border border-black text-black hover:bg-black hover:text-white transition dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black"
-                      >
-                        Delete
-                      </button>
+              {pageLoading ? (
+                [...Array(4)].map((_, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-white dark:bg-black border border-gray-300 dark:border-zinc-700 animate-pulse">
+                    <div className="h-3 w-3/4 bg-gray-300 dark:bg-zinc-700 rounded mb-2"></div>
+                    <div className="h-4 w-1/2 bg-gray-300 dark:bg-zinc-700 rounded mb-3"></div>
+                    <div className="flex gap-3">
+                      <div className="h-6 w-16 bg-gray-300 dark:bg-zinc-700 rounded"></div>
+                      <div className="h-6 w-16 bg-gray-300 dark:bg-zinc-700 rounded"></div>
                     </div>
                   </div>
-                );
-              })}
-
-              {history.length === 0 && (
-                <div className="text-gray-500 dark:text-gray-400 text-sm">
+                ))
+              ) : history.length === 0 ? (
+                <div className="text-gray-500 dark:text-gray-400 text-sm animate-fadeIn">
                   No URLs shortened yet.
                 </div>
+              ) : (
+                history.map((item) => {
+                  const fullUrl = `${BACKEND_BASE_URL}/${item.short_code}`;
+                  return (
+                    <div key={item.id} className="p-4 rounded-xl bg-white dark:bg-black border border-gray-300 dark:border-zinc-700 hover:shadow-md transition animate-fadeIn">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                        {item.original_url}
+                      </div>
+
+                      <a
+                        href={fullUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-black dark:text-white font-medium mt-1 break-all hover:text-red-500 transition-colors duration-200"
+                      >
+                        {fullUrl}
+                      </a>
+
+                      <div className="flex flex-wrap gap-3 mt-3">
+                        <button
+                          onClick={() => {
+                            copyToClipboard(fullUrl);
+                            setCopiedUrl(fullUrl);
+                            setTimeout(() => setCopiedUrl(null), 2000);
+                          }}
+                          className="px-3 py-1 text-sm rounded-md bg-black text-white hover:bg-red-600 transition dark:bg-white dark:text-black dark:hover:bg-red-500"
+                        >
+                          {copiedUrl === fullUrl ? "Copied" : "Copy"}
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="px-3 py-1 text-sm rounded-md border border-black text-black hover:bg-black hover:text-white transition dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );
